@@ -44,6 +44,10 @@ Este documento describe los pasos realizados para limpiar, procesar y preparar l
 - Se desactivan las verificaciones de claves foráneas temporalmente para evitar conflictos durante la inserción masiva.
 
 ### 2. Inserción en Tablas Normalizadas
+#### Esquema original
+
+![img](/images/1.png)
+
 - **Tablas involucradas**:
   1. **`regiones`**:
       - Insertamos las regiones únicas provenientes de `WHO_region`.
@@ -54,35 +58,118 @@ Este documento describe los pasos realizados para limpiar, procesar y preparar l
   4. **`casos`**:
       - Insertamos los datos de casos, vinculando las regiones y municipios mediante subconsultas.
 
-- **Manejo de Errores**:
-  - Para cada inserción:
-    - Si no se encuentra una región o municipio, se omite el registro con un mensaje de advertencia.
-    - Las operaciones de inserción utilizan comandos como `INSERT IGNORE` para evitar duplicados.
+#### Esquema Modificado
 
-- **Reactivación de Claves Foráneas**:
-  - Una vez finalizadas todas las inserciones, se vuelven a activar las verificaciones de claves foráneas.
+El esquema organiza la información en tablas relacionadas para gestionar datos de departamentos, municipios, eventos y reportes nacionales. La tabla departamento almacena un identificador único y el nombre de cada departamento, mientras que municipio relaciona cada municipio con su departamento, junto con su población. La tabla evento_municipal registra eventos específicos en cada municipio, con fechas y cantidades. Por otro lado, reporte_nacional almacena datos agregados a nivel nacional, incluyendo nuevos casos, casos acumulados, nuevas muertes y muertes acumuladas por fecha. Finalmente, la tabla evento vincula eventos locales con los datos de reportes nacionales, permitiendo relacionar información detallada a nivel municipal con métricas más amplias. Este diseño facilita consultas y análisis cruzados entre los niveles regional y nacional.
+
+```sql
+CREATE TABLE departamento (
+    codigo_departamento INT PRIMARY KEY,
+    departamento VARCHAR(50) NOT NULL
+);
+
+
+CREATE TABLE municipio (
+    codigo_municipio INT PRIMARY KEY,
+    municipio VARCHAR(100) NOT NULL,
+    codigo_departamento INT NOT NULL,
+    poblacion INT UNSIGNED NOT NULL,
+    FOREIGN KEY (codigo_departamento) REFERENCES departamento(codigo_departamento)
+);
+
+
+CREATE TABLE evento_municipal (
+    id INT AUTO_INCREMENT PRIMARY KEY,
+    codigo_municipio INT NOT NULL,
+    fecha DATE NOT NULL,
+    eventos INT NOT NULL,
+    FOREIGN KEY (codigo_municipio) REFERENCES municipio(codigo_municipio)
+);
+
+
+CREATE TABLE reporte_nacional (
+    Date_reported DATE PRIMARY KEY,
+    New_cases INT UNSIGNED NOT NULL,
+    Cumulative_cases INT UNSIGNED NOT NULL,
+    New_deaths INT UNSIGNED NOT NULL,
+    Cumulative_deaths INT UNSIGNED NOT NULL
+);
+
+CREATE TABLE evento (
+    id INT AUTO_INCREMENT PRIMARY KEY,
+    codigo_municipio INT NOT NULL,
+    fecha DATE NOT NULL,
+    Date_reported DATE NOT NULL,
+    FOREIGN KEY (codigo_municipio) REFERENCES municipio(codigo_municipio),
+    FOREIGN KEY (Date_reported) REFERENCES reporte_nacional(Date_reported)
+);
+
+
+```
+El nuevo esquema es superior al antiguo porque ofrece una estructura más modular, normalizada y escalable, que facilita análisis detallados a nivel municipal, departamental y nacional. Al separar eventos municipales y reportes nacionales en tablas específicas, se eliminan redundancias y se mejora la flexibilidad para realizar consultas cruzadas. Además, las relaciones más claras entre entidades permiten un control granular de los datos locales y globales, mientras que la capacidad de manejar múltiples eventos asociados a fechas específicas incrementa la escalabilidad. En general, el nuevo esquema es más adecuado para proyectos que requieren análisis complejos y expansión futura sin comprometer la consistencia de los datos.
 
 ---
 
-## Consideraciones Finales
-- **Optimizaciones implementadas**:
-  - Eliminación de datos no válidos antes de la inserción.
-  - Uso de transacciones para asegurar la consistencia de los datos.
+1. **Entorno de Trabajo**:
+- Tener instalado Python 3.x.
+- Instalar las bibliotecas requeridas: `pandas`, `matplotlib`, `seaborn`, `numpy`.
+- Opcional: Uso de Jupyter Notebook o Google Colab para el desarrollo del análisis.
 
-- **Posibles problemas y solución**:
-  - Valores "NaN" o "No disponible": Se eliminan antes de la inserción.
-  - Conflictos de claves foráneas: Se desactivan temporalmente para garantizar una inserción fluida.
+2. **Base de Datos**:
+- Acceso a la base de datos SQL con los datos procesados previamente mediante un proceso ETL.
+- Herramienta para conectar Python a la base de datos: `mysql-connector-python` o `SQLAlchemy`.
 
----
+3. **Conocimientos Previos**:
+- Manejo básico de SQL.
+- Análisis exploratorio de datos (EDA).
+- Generación de gráficos estadísticos.
+Pasos para el Análisis
+### 1. Conexión a la Base de Datos
+1. Configura la conexión a la base de datos SQL desde Python:
 
-## Ejecución del Código
-Para ejecutar este script, asegúrese de:
-1. Tener los archivos `global_calificacion.csv` y `municipio.csv` en el directorio local o accesibles mediante las URLs proporcionadas.
-2. Configurar correctamente las credenciales de conexión a MySQL en `db_config`.
-3. Instalar las librerías necesarias:
-   ```bash
-   pip install pandas mysql-connector-python requests
+```python
+import mysql.connector as mysql
 
-4. Ejecutar el script:
-   ```bash
-   python main.py
+db = mysql.connect(
+    host="localhost",
+    user="tu_usuario",
+    password="tu_contraseña",
+    database="nombre_base_datos"
+)
+
+cursor = db.cursor()
+```
+2. Extrae los datos relevantes con consultas SQL:
+
+```python
+query = "SELECT * FROM tabla_datos"
+cursor.execute(query)
+datos = cursor.fetchall()
+```
+
+### 2. Análisis Univariable
+#### a. Datos Cuantitativos
+Realiza análisis de variables como cantidad de nuevas muertes (`new_cases`), acumuladas (`cumulative_cases`) y población (`poblacion`).
+
+#### Estadísticos a Calcular
+```python
+import pandas as pd
+df = pd.DataFrame(datos, columns=["municipio", "new_cases", "cumulative_cases", "poblacion"])
+print(df.describe())
+```
+
+#### b. Gráficos
+```python
+import matplotlib.pyplot as plt
+df["new_cases"].hist()
+plt.show()
+```
+
+### 3. Identificación de Outliers
+```python
+q1, q3 = df["new_cases"].quantile(0.25), df["new_cases"].quantile(0.75)
+outliers = df[(df["new_cases"] < (q1 - 1.5 * (q3-q1))) | (df["new_cases"] > (q3 + 1.5 * (q3-q1)))]
+print(outliers)
+```
+
+
