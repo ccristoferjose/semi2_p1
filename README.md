@@ -1,8 +1,36 @@
-# Manual de Usuario: ETL Limpieza y Procesamiento de Datos para Inserción en MySQL
+# Descripción del Proyecto: Visualización y Análisis de Datos en Power BI
 
 ## Introducción
-Este documento describe los pasos realizados para limpiar, procesar y preparar los datos provenientes de archivos CSV antes de su inserción en una base de datos MySQL. Se detalla cómo se han manejado los valores nulos, los datos duplicados y las transformaciones necesarias para normalizar los datos en un esquema relacional.
+Este manual documenta el desarrollo del proyecto enfocado en la creación de dashboards interactivos utilizando Power BI. Estos dashboards se basan en los datos recopilados por el Ministerio de Salud de Guatemala durante la pandemia de COVID-19 en 2020. La etapa previa del proyecto consistió en el análisis y procesamiento de datos para su carga en una base de datos SQL. Ahora, la visualización de datos permite extraer y comunicar información clave de manera efectiva.
 
+
+## Dashboard 1: Fallecidos por Municipio
+
+Este dashboard presenta la información de fallecimientos por municipio, permitiendo identificar tendencias locales y analizar correlaciones entre la población y las muertes.
+
+![img](/images/dash1.png)
+
+Las gráficas utilizadas en este dashboard fueron seleccionadas para maximizar la claridad y comprensión de los datos representados. El gráfico de barras permite visualizar fácilmente las diferencias en el número de muertes entre municipios, destacando las áreas más afectadas. El gráfico de líneas muestra de manera clara la evolución acumulada de muertes a lo largo del tiempo, permitiendo identificar tendencias. La dispersión facilita el análisis de correlación entre la población y las muertes, ayudando a evaluar la relación entre estos factores. El mapa interactivo ofrece una representación geográfica intuitiva que permite localizar rápidamente los municipios afectados. Finalmente, los indicadores clave brindan métricas resumidas como la tasa de mortalidad, días registrados y máximos fallecimientos diarios, proporcionando un resumen cuantitativo que complementa las visualizaciones detalladas. Esta combinación de elementos visuales asegura una comprensión integral y una navegación interactiva para los usuarios.
+
+## Dashboard 2: Fallecidos por Departamento
+
+Este dashboard amplía el análisis a nivel departamental, permitiendo comparar regiones con mayor y menor impacto.
+
+![img](/images/dash2.png)
+
+Las gráficas empleadas en este dashboard fueron seleccionadas para facilitar el análisis a nivel departamental, destacando patrones y tendencias clave. El gráfico de barras permite comparar rápidamente las muertes totales entre departamentos, mientras que el gráfico de líneas acumuladas muestra las tendencias de crecimiento en cada región a lo largo del tiempo. El gráfico de dispersión ayuda a analizar la distribución de los valores acumulados, destacando departamentos con características atípicas. El mapa interactivo proporciona una representación geográfica clara, visualizando el impacto regional con círculos proporcionales al número de muertes. Finalmente, los indicadores clave, como la tasa de mortalidad y el máximo de muertes, resumen información crítica, mientras que los filtros y segmentadores interactivos permiten una exploración detallada de datos específicos por departamento y fechas. Esta combinación asegura una interpretación integral y precisa de los datos departamentales.
+
+## Objetivo del Dashboard 3: Datos Globales
+
+El tercer dashboard del proyecto está diseñado para ofrecer una comparación entre los datos locales del Ministerio de Salud de Guatemala y datos globales relacionados con la pandemia de COVID-19. Este dashboard incluye indicadores clave que permiten a los usuarios explorar las diferencias entre los datos locales y globales, y visualizar tendencias que revelan patrones y anomalías en los datos.
+
+![img](/images/dash2.png)
+
+Las gráficas de este dashboard fueron seleccionadas para proporcionar una comparación clara y precisa entre los datos de Guatemala y las tendencias globales relacionadas con la pandemia. El gráfico de líneas que compara las muertes diarias locales y globales permite identificar patrones de variación y similitudes en el impacto de la pandemia. El gráfico de barras refleja visualmente la diferencia entre la tasa de mortalidad en Guatemala y el promedio global, destacando discrepancias importantes.
+
+El gráfico de líneas acumuladas para muertes y el promedio global ofrece una perspectiva clara sobre el progreso acumulativo del impacto local frente al global, mientras que el gráfico combinado de líneas y barras para nuevos casos diarios y muertes acumuladas muestra simultáneamente tendencias específicas de nuevos contagios junto con las consecuencias acumulativas, lo que facilita un análisis completo.
+
+Finalmente, los segmentadores de país y rango de fechas permiten una exploración interactiva, permitiendo al usuario ajustar el análisis a contextos y períodos específicos, lo que mejora la utilidad del dashboard para la toma de decisiones basada en datos.
 ---
 
 ## Proceso de Limpieza de Datos
@@ -40,13 +68,14 @@ Este documento describe los pasos realizados para limpiar, procesar y preparar l
 ## Inserción en MySQL
 
 ### 1. Conexión a la Base de Datos
-- Configuramos la conexión usando las credenciales proporcionadas (usuario, contraseña, nombre de la base de datos, etc.).
-- Se desactivan las verificaciones de claves foráneas temporalmente para evitar conflictos durante la inserción masiva.
+
+La conexión de Power BI con la base de datos MySQL alojada en Amazon RDS se realizó configurando el endpoint de la instancia RDS, junto con las credenciales de acceso proporcionadas. En Power BI, se utilizó la opción "Obtener datos" seleccionando el conector MySQL y estableciendo la conexión segura con SSL para garantizar la protección de los datos. Las tablas adicionales en formato CSV se cargaron directamente en Power BI mediante el editor de consultas, donde se realizó la limpieza de datos y se relacionaron con las tablas de la base de datos para complementar los análisis y enriquecer los dashboards.
+
 
 ### 2. Inserción en Tablas Normalizadas
-#### Esquema original
+#### Esquema Final Adaptado
 
-![img](/images/1.png)
+![img](/images/2.png)
 
 - **Tablas involucradas**:
   1. **`regiones`**:
@@ -110,66 +139,42 @@ El nuevo esquema es superior al antiguo porque ofrece una estructura más modula
 
 ---
 
+### **Entorno de Trabajo con Power BI, Amazon RDS y React**
+
 1. **Entorno de Trabajo**:
-- Tener instalado Python 3.x.
-- Instalar las bibliotecas requeridas: `pandas`, `matplotlib`, `seaborn`, `numpy`.
-- Opcional: Uso de Jupyter Notebook o Google Colab para el desarrollo del análisis.
+   - Tener instalada la herramienta Power BI Desktop.
+   - Acceso a un entorno de desarrollo React configurado para crear una interfaz web interactiva.
+   - Configuración de una base de datos MySQL en Amazon RDS.
 
 2. **Base de Datos**:
-- Acceso a la base de datos SQL con los datos procesados previamente mediante un proceso ETL.
-- Herramienta para conectar Python a la base de datos: `mysql-connector-python` o `SQLAlchemy`.
+   - Conexión de Power BI a Amazon RDS utilizando el endpoint de la instancia RDS, junto con las credenciales proporcionadas.
+   - Carga y limpieza de datos adicionales en Power BI desde archivos CSV para integrarlos con las tablas de MySQL.
 
 3. **Conocimientos Previos**:
-- Manejo básico de SQL.
-- Análisis exploratorio de datos (EDA).
-- Generación de gráficos estadísticos.
-Pasos para el Análisis
-### 1. Conexión a la Base de Datos
-1. Configura la conexión a la base de datos SQL desde Python:
+   - Conocimientos básicos de SQL para explorar datos en Amazon RDS.
+   - Habilidad en Power BI para transformar, limpiar y visualizar datos.
+   - Familiaridad con React para crear una aplicación web que integre los dashboards de Power BI embebidos.
 
-```python
-import mysql.connector as mysql
+---
 
-db = mysql.connect(
-    host="localhost",
-    user="tu_usuario",
-    password="tu_contraseña",
-    database="nombre_base_datos"
-)
+### **Pasos para la Conexión y Visualización**
 
-cursor = db.cursor()
-```
-2. Extrae los datos relevantes con consultas SQL:
+#### 1. Conexión a la Base de Datos en Power BI:
+1. Configura la conexión desde Power BI seleccionando **Obtener datos** > **MySQL**:
+   - Introduce el endpoint de Amazon RDS, puerto, nombre de la base de datos, usuario y contraseña.
+   - Habilita SSL para asegurar la transferencia de datos.
+2. Una vez conectado, selecciona las tablas relevantes y cárgalas al modelo de datos en Power BI.
 
-```python
-query = "SELECT * FROM tabla_datos"
-cursor.execute(query)
-datos = cursor.fetchall()
-```
+#### 2. Limpieza y Relación de Datos:
+- Limpia y transforma las tablas en Power BI utilizando el editor de consultas.
+- Relaciona las tablas importadas de MySQL con los datos cargados desde archivos CSV para enriquecer los análisis.
 
-### 2. Análisis Univariable
-#### a. Datos Cuantitativos
-Realiza análisis de variables como cantidad de nuevas muertes (`new_cases`), acumuladas (`cumulative_cases`) y población (`poblacion`).
+#### 3. Publicación de Dashboards en React:
+1. Publica los dashboards creados en Power BI en el servicio Power BI Online.
+2. Genera un enlace embebido o token de acceso para integrar los dashboards en React.
+3. En React, utiliza el componente `iframe` o bibliotecas específicas como `powerbi-client-react` para mostrar los dashboards de Power BI en la aplicación web.
 
-#### Estadísticos a Calcular
-```python
-import pandas as pd
-df = pd.DataFrame(datos, columns=["municipio", "new_cases", "cumulative_cases", "poblacion"])
-print(df.describe())
-```
+---
 
-#### b. Gráficos
-```python
-import matplotlib.pyplot as plt
-df["new_cases"].hist()
-plt.show()
-```
-
-### 3. Identificación de Outliers
-```python
-q1, q3 = df["new_cases"].quantile(0.25), df["new_cases"].quantile(0.75)
-outliers = df[(df["new_cases"] < (q1 - 1.5 * (q3-q1))) | (df["new_cases"] > (q3 + 1.5 * (q3-q1)))]
-print(outliers)
-```
-
-
+### **Resultado Final**
+Los datos procesados en Amazon RDS y los gráficos creados en Power BI se presentan en una aplicación web React, ofreciendo una experiencia interactiva y accesible para los usuarios finales. La solución combina la potencia analítica de Power BI con la flexibilidad de React para una visualización dinámica y moderna.
