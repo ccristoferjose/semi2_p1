@@ -77,19 +77,61 @@ La conexión de Power BI con la base de datos MySQL alojada en Amazon RDS se rea
 
 ![img](/images/2.png)
 
-- **Tablas involucradas**:
-  1. **`regiones`**:
-      - Insertamos las regiones únicas provenientes de `WHO_region`.
-  2. **`departamentos`**:
-      - Insertamos los departamentos únicos con su nombre y código.
-  3. **`municipios`**:
-      - Insertamos los municipios junto con su código, el ID del departamento relacionado y su población.
-  4. **`casos`**:
-      - Insertamos los datos de casos, vinculando las regiones y municipios mediante subconsultas.
-
 #### Esquema Modificado
 
-El esquema organiza la información en tablas relacionadas para gestionar datos de departamentos, municipios, eventos y reportes nacionales. La tabla departamento almacena un identificador único y el nombre de cada departamento, mientras que municipio relaciona cada municipio con su departamento, junto con su población. La tabla evento_municipal registra eventos específicos en cada municipio, con fechas y cantidades. Por otro lado, reporte_nacional almacena datos agregados a nivel nacional, incluyendo nuevos casos, casos acumulados, nuevas muertes y muertes acumuladas por fecha. Finalmente, la tabla evento vincula eventos locales con los datos de reportes nacionales, permitiendo relacionar información detallada a nivel municipal con métricas más amplias. Este diseño facilita consultas y análisis cruzados entre los niveles regional y nacional.
+El esquema organiza la información en tablas relacionadas para gestionar datos locales y globales, ampliando la capacidad analítica más allá de los límites nacionales. A continuación, se describe la función de cada tabla en el nuevo esquema:
+
+- **Tablas involucradas**:
+  - **Tabla `departamento`:**  
+  Almacena un identificador único y el nombre de cada departamento, siendo la base para agrupar datos a nivel departamental.
+
+- **Tabla `municipio`:**  
+  Relaciona cada municipio con su departamento, junto con información sobre su población. Esto permite realizar análisis detallados a nivel municipal.
+
+- **Tabla `evento_municipal`:**  
+  Registra eventos específicos en cada municipio, incluyendo fechas y cantidades, para un seguimiento granular de los impactos locales.
+
+- **Tabla `reporte_nacional`:**  
+  Contiene datos agregados a nivel nacional, como nuevos casos, casos acumulados, nuevas muertes y muertes acumuladas por fecha, permitiendo análisis enfocados en el contexto de Guatemala.
+
+- **Tabla `evento`:**  
+  Vincula eventos locales con los datos de reportes nacionales, facilitando la conexión entre información detallada a nivel municipal y métricas más amplias.
+
+- **Tabla `world_population_2023`:**  
+  Integra datos demográficos globales, esenciales para calcular tasas de mortalidad y realizar comparaciones entre Guatemala y otros países.
+
+- **Tabla `reporte_global`:**  
+  Almacena datos agregados de otros países, como nuevos casos y muertes acumuladas, permitiendo un análisis comparativo a nivel mundial.
+
+- **Tabla `tabla_fechas`:**  
+  Actúa como una tabla de soporte para relacionar fechas entre los reportes nacionales y globales, garantizando consistencia y eficiencia en las consultas cruzadas.
+
+- **Tabla `indicadores_departamento`:**  
+  Proporciona métricas clave como variación diaria de muertes y totales por departamento, generadas a partir de consultas SQL avanzadas, para análisis detallados en el contexto departamental.
+
+
+#### **1. Tabla de Población Mundial 2023 (`world_population_2023`)**
+- **Justificación:**  
+  Los datos originales no contenían información demográfica global. Esta tabla fue esencial para calcular la tasa de mortalidad a nivel mundial y compararla con Guatemala, proporcionando un contexto más amplio y relevante para el análisis. Sin esta tabla, no hubiera sido posible analizar el impacto relativo de la pandemia en un marco global.
+
+---
+
+#### **2. Tabla de Reporte Global (`reporte_global`)**
+- **Justificación:**  
+  El esquema inicial estaba enfocado únicamente en los datos de Guatemala. Esta nueva tabla permitió integrar datos de otros países, lo cual fue indispensable para realizar comparaciones globales, analizar tendencias internacionales y entender el impacto relativo de la pandemia en Guatemala frente a otros contextos.
+
+---
+
+#### **3. Tabla de Fechas (`tabla_fechas`)**
+- **Justificación:**  
+  Esta tabla fue necesaria para vincular de manera eficiente los datos de `reporte_nacional` y `reporte_global`, ya que las fechas servían como punto común de referencia. Su inclusión optimizó el rendimiento al realizar consultas entre los dos conjuntos de datos, asegurando una estructura relacional clara y precisa.
+
+---
+
+#### **4. Tabla de Indicadores por Departamento (`indicadores_departamento`)**
+- **Justificación:**  
+  Esta tabla fue generada a partir de una consulta SQL avanzada para calcular indicadores clave como la variación diaria de muertes por departamento. Dado que estos datos no estaban presentes en el esquema original, esta tabla permitió desglosar y analizar el impacto a nivel departamental, proporcionando métricas más detalladas y específicas que mejoraron la granularidad del análisis.
+
 
 ```sql
 CREATE TABLE departamento (
